@@ -1,3 +1,4 @@
+const User = require('../models/userModel');
 const Group = require('../models/groupModel');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -91,6 +92,53 @@ exports.connectToAGroup = async(req, res) =>{
     } catch (error) {
         console.log(error);
         res.status(500).json({message: 'Une erreur s\'est produite lors du traitement'});
+    }
+}
+
+
+exports.getAllUsersInGroup = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        if(token != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+
+            req.group = payload;
+
+            //si l utilisateur fais partie du group il peut acceder a la liste des members
+            const groupMembers = req.group.members_id[0];
+            if(groupMembers.includes(req.group.user_id)){
+                try {
+                    let tabMembers = [];
+                    for(let i=0; i<groupMembers.length; i++){
+                        const userMember = await User.find({_id : groupMembers[i]});
+                        tabMembers.push({id: userMember[i]._id, email: userMember[i].email})
+                    }
+                    res.status(200);
+                    res.json(tabMembers);
+
+                } catch (error) {
+                    res.status(500);
+                        console.log(error);
+                        res.json({ message : 'Erreur serveur'});
+                }
+            }else{
+                res.status(403).json({message: "Accès interdit: Vous ne faites pas partie de ce group."});
+            }
+        }else{
+            res.status(403).json({message: "Accès interdit: token manquant"});
+        } 
+    } catch (error) {
+        res.status(500);
+            console.log(error);
+            res.json({ message : 'Erreur serveur (group inexistant)'});
     }
 }
 

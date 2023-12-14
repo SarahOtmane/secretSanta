@@ -73,6 +73,24 @@ server.post('/groups/login', jwtMiddleware.verifyToken, groupController.connectT
  *             example: { message: 'Group created successfully and its name is ${name}' }
  */
 
+server.get('/groups', jwtMiddleware.verifyToken, groupController.getAllUsersInGroup);
+/**
+ * @openapi
+ * /groups:
+ *   post:
+ *     summary: list members of a group
+ *     description: Endpoint to list members of a group. Only the members can see each other.
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       201:
+ *         description: listing all members
+ *         content:
+ *           application/json:
+ *             example: { members of the group }
+ */
+
 
 server.delete('/groups/admin', jwtMiddleware.verifyToken, groupController.deleteGroup);
 /**
