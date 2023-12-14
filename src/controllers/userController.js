@@ -71,9 +71,9 @@ exports.userModify = async(req, res) =>{
             req.user = payload;
 
             try{
+                req.body.password = await bcrypt.hash(req.body.password, 10);
                 const user = await User.findByIdAndUpdate(req.user.id, req.body, {new: true});
-                res.status(200);
-                res.json(user);
+                res.status(201).json({message : "votre mot de passe a bien été modifié"});
             }
             catch(error){
                 res.status(500);
