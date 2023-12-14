@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const jwtMiddleware = require('../middlewares/jwtMiddleware');
 require('dotenv').config();
@@ -6,11 +7,17 @@ require('dotenv').config();
 exports.userRegister = async(req, res) =>{
     try {
         if (jwtMiddleware.verifyEmail(req.body.email)) {
-            let newUser = new User(req.body);  
+            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+            let newUser = new User({
+                email: req.body.email,
+                password: hashedPassword
+            });
+              
             let user = await newUser.save();
             res.status(201).json({message: `User créer: ${user.email}`});
         } else {
-            res.status(401).json({message: 'Le format de l email na pas été respecté'});
+            res.status(401).json({message: 'Le format de l\'email n\'a pas été respecté'});
         }
     } catch(error){
         res.status(401).json({message: 'Requete invalide'});
@@ -26,7 +33,9 @@ exports.loginRegister = async(req, res) =>{
             res.status(500).json({message: "utilisateur non trouvé"});
             return;
         }else{
-            if(user.email == req.body.email && user.password == req.body.password){
+            const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+
+            if(user.email == req.body.email && passwordMatch){
                 const userData = {
                     id: user._id,
                     email: user.email
