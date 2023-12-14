@@ -16,9 +16,10 @@ exports.createAGroup = async(req, res) =>{
                 })
             })
 
+            //recup du token les données du user 
             req.user = payload;
 
-            try{
+            try{    
                 let newGroup = await new Group({
                     name: req.body.name,
                     admin_id: req.user.id,
@@ -27,7 +28,7 @@ exports.createAGroup = async(req, res) =>{
 
                 let group = await newGroup.save();
 
-                res.status(201).json({message: `Groupe créer: ${group.name} and ${group.id}`});
+                res.status(201).json({message: `Groupe créer avec succès. Le nom de ce dernier est: ${group.name} , son id est:  ${group.id}`});
             }
             catch(error){
                 res.status(500);
@@ -57,7 +58,7 @@ exports.connectToAGroup = async(req, res) =>{
                     }
                 })
             })
-
+            //recup du token les infos du user qui veut se connecter au groupe
             req.user = payload;
 
             try{
@@ -66,15 +67,16 @@ exports.connectToAGroup = async(req, res) =>{
                     res.status(500).json({message: "Group non trouvé"});
                     return;
                 }else{
+                    //l id, admin_id et members_id sont recup depuis la bdd
                     const groupData = {
                         id: group._id,
                         admin_id: group.admin_id,
-                        members_id: [group.members_id],
+                        members_id: group.members_id,
                         user_id: req.user.id
                     }
                     
                     const token= await jwt.sign(groupData, process.env.JWT_KEY, {expiresIn: '24h'});
-                    res.status(201).json(token);
+                    res.status(201).json({token});
                 }
             }
             catch(error){
@@ -109,11 +111,12 @@ exports.deleteGroup = async(req, res) =>{
 
             req.group = payload;
 
+            //si l utilisateur actuel est un admin il pourra delete sinon acces interdit
             if(req.group.admin_id == req.group.user_id){
                 try {
                     const group = await Group.findByIdAndDelete(req.group.id, req.body, {new: true});
                     res.status(201).json({message : 'Group Supprimé'});
-                    
+
                 } catch (error) {
                     res.status(500);
                         console.log(error);
@@ -128,6 +131,45 @@ exports.deleteGroup = async(req, res) =>{
     } catch (error) {
         res.status(500);
             console.log(error);
-            res.json({ message : 'Erreur serveur (user inexistant)'});
+            res.json({ message : 'Erreur serveur (group inexistant)'});
+    }
+}
+
+exports.updateNameGroup = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        if(token != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+
+            req.group = payload;
+
+            if(req.group.admin_id == req.group.user_id){
+                try {
+                    const group = await Group.findByIdAndUpdate(req.group.id, req.body, {new: true});
+                    res.status(201).json({message: `Nom du groupe modifié avec succés. Le nouveau nom est : ${req.body.name}`});
+
+                } catch (error) {
+                    res.status(500);
+                        console.log(error);
+                        res.json({ message : 'Erreur serveur'});
+                }
+            }else{
+                res.status(403).json({message: "Accès interdit: Vous n\'etes pas l\'admin"});
+            }
+        }else{
+            res.status(403).json({message: "Accès interdit: token manquant"});
+        }
+    } catch (error) {
+        res.status(500);
+            console.log(error);
+            res.json({ message : 'Erreur serveur'});
     }
 }

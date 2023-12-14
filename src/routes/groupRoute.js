@@ -92,4 +92,36 @@ server.delete('/groups/admin', jwtMiddleware.verifyToken, groupController.delete
  *             example: { message: 'Group deleted successfully' }
  */
 
+
+
+server.put('/groups/admin', jwtMiddleware.verifyToken, groupController.updateNameGroup);
+/**
+ * @openapi
+ * /users:
+ *   put:
+ *     summary: Modify groupe name
+ *     description: Endpoint to modify group name only by the admin of the group.
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *             required:
+ *               - name
+ *     responses:
+ *       201:
+ *         description: Group name modified successfully
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group name modified successfully, the new name is givent' }
+ */
+
+
 }
