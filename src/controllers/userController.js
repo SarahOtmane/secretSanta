@@ -49,7 +49,7 @@ exports.loginRegister = async(req, res) =>{
         }
     } catch (error) {
         console.log(error);
-        res.status(500).json({message: 'Une erreur s est produite lors du traitement'});
+        res.status(500).json({message: 'Une erreur s\'est produite lors du traitement'});
     }
 }
 
@@ -78,7 +78,7 @@ exports.userModify = async(req, res) =>{
             catch(error){
                 res.status(500);
                     console.log(error);
-                    res.json({ message : 'Erreur serveur'});
+                    res.json({ message : 'Erreur serveur lors du traitement'});
             }
         }else{
             res.status(403).json({message: "Accès interdit: token manquant"});
@@ -86,7 +86,7 @@ exports.userModify = async(req, res) =>{
     } catch (error) {
         res.status(500);
             console.log(error);
-            res.json({ message : 'Erreur serveur (user inexistant)'});
+            res.json({ message : 'Erreur serveur'});
     }
 }
 
