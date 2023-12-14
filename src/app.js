@@ -16,6 +16,9 @@ app.use(express.json());
 const userRoute = require('./routes/userRoute');
 userRoute(app);
 
+const groupRoute = require('./routes/groupRoute');
+groupRoute(app);
+
 app.listen(port, () =>{
     console.log(`Example app listenning on port ${port}`);
 })
