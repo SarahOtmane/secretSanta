@@ -28,6 +28,7 @@ server.post('/users/register', userController.userRegister);
  *                 type: string
  *               password:
  *                 type: string
+ *             required: ['email', 'password']
  *     responses:
  *       200:
  *         description: User registered successfully
@@ -56,6 +57,7 @@ server.post('/users/login', userController.loginRegister);
  *                 type: string
  *               password:
  *                 type: string
+ *             required: ['email', 'password']
  *     responses:
  *       201:
  *         description: User logged in successfully
