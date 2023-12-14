@@ -42,7 +42,7 @@ exports.loginRegister = async(req, res) =>{
                 }
 
                 const token = await jwt.sign(userData, process.env.JWT_KEY, {expiresIn: '10h'});
-                res.status(200).json({token});
+                res.status(201).json({token});
             }else{
                 res.status(401).json({message: 'Email ou password incorrect'});
             }
