@@ -9,6 +9,7 @@ module.exports = (server) => {
  *   description: CRUD of users
  */
 
+
 server.post('/users/register', userController.userRegister);
 /**
  * @openapi
@@ -28,7 +29,9 @@ server.post('/users/register', userController.userRegister);
  *                 type: string
  *               password:
  *                 type: string
- *             required: ['email', 'password']
+ *             required:
+ *               - email
+ *               - password
  *     responses:
  *       200:
  *         description: User registered successfully
@@ -57,7 +60,9 @@ server.post('/users/login', userController.loginRegister);
  *                 type: string
  *               password:
  *                 type: string
- *             required: ['email', 'password']
+ *             required:
+ *               - email
+ *               - password
  *     responses:
  *       201:
  *         description: User logged in successfully
@@ -89,6 +94,9 @@ server.put('/users', jwtMiddleware.verifyToken, userController.userModify);
  *                 type: string
  *               password:
  *                  type: string
+ *             required:
+ *               - email
+ *               - password
  *     responses:
  *       201:
  *         description: User information modified successfully
