@@ -9,6 +9,7 @@ module.exports = (server) => {
  *   description: CRUD of users
  */
 
+server.post('/users/register', userController.userRegister);
 /**
  * @openapi
  * /users/register:
@@ -28,13 +29,15 @@ module.exports = (server) => {
  *               password:
  *                 type: string
  *     responses:
- *       201:
+ *       200:
  *         description: User registered successfully
  *         content:
  *           application/json:
- *             example: { message: 'User registered successfully and your email is ${email}' }
+ *             example: { message: 'User registered successfully' }
  */
 
+
+server.post('/users/login', userController.loginRegister);
 /**
  * @openapi
  * /users/login:
@@ -61,6 +64,9 @@ module.exports = (server) => {
  *             example: { token: 'JWT_TOKEN_HERE' }
  */
 
+
+
+server.put('/users', jwtMiddleware.verifyToken, userController.userModify);
 /**
  * @openapi
  * /users:
@@ -89,6 +95,8 @@ module.exports = (server) => {
  *             example: { message: 'User information modified successfully' }
  */
 
+
+server.delete('/users', jwtMiddleware.verifyToken, userController.deleteUser);
 /**
  * @openapi
  * /users:
@@ -106,11 +114,4 @@ module.exports = (server) => {
  *             example: { message: 'User account deleted successfully' }
  */
 
-
-
-
-    server.post('/users/register', userController.userRegister);
-    server.post('/users/login', userController.loginRegister);
-    server.put('/users', jwtMiddleware.verifyToken, userController.userModify);
-    server.delete('/users', jwtMiddleware.verifyToken, userController.deleteUser);
 }
