@@ -1,5 +1,6 @@
 module.exports = (server) => {
     const userController = require('../controllers/userController');
+    const jwtMiddleware = require('../middlewares/jwtMiddleware');
 
 /**
  * @openapi
@@ -31,8 +32,80 @@ module.exports = (server) => {
  *         description: User registered successfully
  *         content:
  *           application/json:
- *             example: { message: 'User registered successfully' }
+ *             example: { message: 'User registered successfully and your email is ${email}' }
  */
+
+/**
+ * @openapi
+ * /users/login:
+ *   post:
+ *     summary: Login as an existing user
+ *     description: Endpoint to login as an existing user.
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User logged in successfully
+ *         content:
+ *           application/json:
+ *             example: { token: 'JWT_TOKEN_HERE' }
+ */
+
+/**
+ * @openapi
+ * /users:
+ *   put:
+ *     summary: Modify user information
+ *     description: Endpoint to modify user information.
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                  type: string
+ *     responses:
+ *       201:
+ *         description: User information modified successfully
+ *         content:
+ *           application/json:
+ *             example: { message: 'User information modified successfully' }
+ */
+
+/**
+ * @openapi
+ * /users:
+ *   delete:
+ *     summary: Delete a user account
+ *     description: Endpoint to delete a user account.
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User account deleted successfully
+ *         content:
+ *           application/json:
+ *             example: { message: 'User account deleted successfully' }
+ */
+
 
 
 

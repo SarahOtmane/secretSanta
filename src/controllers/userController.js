@@ -1,12 +1,17 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
+const jwtMiddleware = require('../middlewares/jwtMiddleware');
 require('dotenv').config();
 
 exports.userRegister = async(req, res) =>{
     try {
-        let newUser = new User(req.body);  
-        let user = await newUser.save();
-        res.status(201).json({message: `User créer: ${user.email}`});
+        if (jwtMiddleware.verifyEmail(req.body.email)) {
+            let newUser = new User(req.body);  
+            let user = await newUser.save();
+            res.status(201).json({message: `User créer: ${user.email}`});
+        } else {
+            res.status(401).json({message: 'Le format de l email na pas été respecté'});
+        }
     } catch(error){
         res.status(401).json({message: 'Requete invalide'});
     }
@@ -54,18 +59,18 @@ exports.userModify = async(req, res) =>{
                 })
             })
 
-        req.user = payload;
+            req.user = payload;
 
-        try{
-            const user = await User.findByIdAndUpdate(req.user.id, req.body, {new: true});
-            res.status(200);
-            res.json(user);
-        }
-        catch(error){
-            res.status(500);
-                console.log(error);
-                res.json({ message : 'Erreur serveur'});
-        }
+            try{
+                const user = await User.findByIdAndUpdate(req.user.id, req.body, {new: true});
+                res.status(200);
+                res.json(user);
+            }
+            catch(error){
+                res.status(500);
+                    console.log(error);
+                    res.json({ message : 'Erreur serveur'});
+            }
         }else{
             res.status(403).json({message: "Accès interdit: token manquant"});
         }
@@ -91,18 +96,18 @@ exports.deleteUser = async(req, res) =>{
                 })
             })
 
-        req.user = payload;
+            req.user = payload;
 
-        try{
-            const user = await User.findByIdAndDelete(req.user.id, req.body, {new: true});
-            res.status(200);
-            res.json({ message : 'Supprimé'});
-        }
-        catch(error){
-            res.status(500);
-                console.log(error);
-                res.json({ message : 'Erreur serveur'});
-        }
+            try{
+                const user = await User.findByIdAndDelete(req.user.id, req.body, {new: true});
+                res.status(200);
+                res.json({ message : 'Supprimé'});
+            }
+            catch(error){
+                res.status(500);
+                    console.log(error);
+                    res.json({ message : 'Erreur serveur'});
+            }
         }else{
             res.status(403).json({message: "Accès interdit: token manquant"});
         }  
