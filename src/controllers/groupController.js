@@ -688,7 +688,8 @@ exports.acceptInvitation = async(req, res) =>{
         - Vérifier que le user qui veut joindre le groupe est celui qui a été invité
         - Vérifier que le user n'a pas déja refusé l'invit
 
-        Dans ce cas la, le user est retiré de la liste des membres invité
+        Dans ce cas la, le user est retiré de la liste des membres invité. 
+            Suppresion de son compte s'il a été créer lors de l envoie de l'invitation
 
     Reponses: 
         201 : Le user à refusé de joindre le groupe
@@ -752,6 +753,13 @@ exports.refuseInvitation = async(req, res) =>{
                         groupM.membersTab = membersInvitedTab;
                         
                         const groupUpdate = await Group.findByIdAndUpdate(req.group.id, groupM, {new: true});
+
+                        //supprimé le compte du user s'il a été créer au moment de l'envoie de l'invitation
+                        const user = await User.findOne({_id: req.user.id});
+                        if(!user.created){
+                            const userD = await User.findByIdAndDelete(req.user.id, req.body, {new: true});
+                        }
+
                         res.status(201).json({message: 'Vous venez refusé de rejoindre le groupe '})
                     }
                 }else{
