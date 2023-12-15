@@ -13,6 +13,10 @@ let groupSchema = new Schema({
     members_id:{
         type: Array,
         required : true
+    },
+    membresInvited:{
+        type: Array,
+        required : true
     }
 });
 
