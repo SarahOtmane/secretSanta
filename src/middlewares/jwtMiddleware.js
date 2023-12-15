@@ -31,3 +31,16 @@ exports.verifyEmail = (email) =>{
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regexEmail.test(email);
 }
+
+
+exports.genererMotDePasse = () =>{
+    var caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+    var motDePasse = "";
+  
+    for (var i = 0; i < 10; i++) {
+      var index = Math.floor(Math.random() * caracteres.length);
+      motDePasse += caracteres.charAt(index);
+    }
+  
+    return motDePasse;
+  }
