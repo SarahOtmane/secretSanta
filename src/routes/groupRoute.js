@@ -110,6 +110,25 @@ server.post('/groups/admin/senta', jwtMiddleware.verifyToken, groupController.as
  *             example: { message: 'Group created successfully and its name is ${name}' }
  */
 
+
+server.get('/groups/admin', jwtMiddleware.verifyToken, groupController.listAllMembersWithAssignement);
+/**
+ * @openapi
+ * /groups/admin:
+ *   get:
+ *     summary: List of all user with their assigner
+ *     description: Endpoint to list of all user with their assigner.
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       201:
+ *         description: List of all user with their assigner
+ *         content:
+ *           application/json:
+ *             example: { message: 'the user {a@gmail.com} is assigned tp {a@gmail.com}' }
+ */
+
 server.delete('/groups/admin', jwtMiddleware.verifyToken, groupController.deleteGroup);
 /**
  * @openapi
@@ -249,23 +268,8 @@ server.post('/groups/invitation/refuse', jwtMiddleware.verifyToken, groupControl
  */
 
 
-server.get('/groups/admin', jwtMiddleware.verifyToken, groupController.listAllMembersWithAssignement);
-/**
- * @openapi
- * /groups/admin:
- *   get:
- *     summary: List of all user with their assigner
- *     description: Endpoint to list of all user with their assigner.
- *     tags: [Groups]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       201:
- *         description: List of all user with their assigner
- *         content:
- *           application/json:
- *             example: { message: 'the user {a@gmail.com} is assigned tp {a@gmail.com}' }
- */
+
+server.get('/groups/assigned', jwtMiddleware.verifyToken, groupController.getUserAssigned);
 
 
 }

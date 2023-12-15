@@ -659,3 +659,65 @@ exports.listAllMembersWithAssignement = async(req, res) =>{
             res.json({ message : 'Erreur serveur (group inexistant)'});
     }
 }
+
+exports.getUserAssigned = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        let tokenInvit = req.body.authorizationInvit;
+        
+        if(token != undefined && tokenInvit != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+            req.user = payload;
+
+            const payloadInvit = await new Promise((resolve, reject) =>{
+                jwt.verify(tokenInvit, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+            req.group = payloadInvit;
+
+            if(req.group.user_id == req.user.id){
+                try {
+                    const groupM = await Group.findOne({_id: req.group.id});
+                    membersAssignTab = groupM.membersAssigned;
+
+                    let assigned;
+
+                    for(let i=0; i<membersAssignTab.length; i++){
+                        if(membersAssignTab[i].personneQuiOffre == req.user.id){
+                            assigned = membersAssignTab[i].personneAQuiOffrir;
+                        }
+                    }
+
+                    let user = await User.findOne({_id: assigned});
+                    res.status(201).json({message: `Vous devez offir à ${user.email}`});
+
+                } catch (error) {
+                    res.status(500);
+                        console.log(error);
+                        res.json({ message : 'Erreur serveur'});
+                }
+            }else{
+                res.status(403).json({message: "Accès interdit."});
+            }
+        }else{
+            res.status(403).json({message: "Accès interdit: token manquant"});
+        } 
+    } catch (error) {
+        res.status(500);
+            console.log(error);
+            res.json({ message : 'Erreur serveur (group inexistant)'});
+    }
+}
