@@ -17,6 +17,10 @@ let groupSchema = new Schema({
     membresInvited:{
         type: Array,
         required : true
+    },
+    membersAssigned:{
+        type: Array,
+        required : true
     }
 });
 

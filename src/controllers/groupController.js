@@ -459,8 +459,6 @@ exports.acceptInvitation = async(req, res) =>{
     }
 }
 
-
-
 exports.refuseInvitation = async(req, res) =>{
     try {
         let token = req.headers['authorization'];
@@ -524,6 +522,136 @@ exports.refuseInvitation = async(req, res) =>{
         }else{
             if(token == undefined ) res.status(403).json({message: "Accès interdit: token de login maquant"});
             else res.status(403).json({message: "Accès interdit: token de l invitation manquant ou expiré"});
+        } 
+    } catch (error) {
+        res.status(500);
+            console.log(error);
+            res.json({ message : 'Erreur serveur (group inexistant)'});
+    }
+}
+
+exports.assignPerson = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        if(token != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+            req.group = payload;
+
+            //vérifier qu'il s agit bien de l admin
+            if(req.group.admin_id == req.group.user_id){
+                try {
+                    let groupM = await Group.findOne({_id: req.group.id});
+
+                    //vérifier qu'il y a minimum 2 membre dans le groupe
+                    let members = groupM.members_id;
+                    if(members < 2){
+                        res.status(401).json({message: 'Il doit y avoir minimum deux membre dans le groupe pour faire un secret santa'});
+                    }else{
+                        //enlever de la liste des personnes invités celle qui ont dépasse le délais de reponse qui est 24h
+                        let membersInvitedTab = groupM.membresInvited;
+                        let expiration = 24 * 60 * 60 * 1000;
+
+                        for(let i=0; i<membersInvitedTab.length; i++){
+                            if(membersInvitedTab[i].createdAt >= expiration) membersInvitedTab.slice(i, 1);
+                        }
+
+                        //vérifier que tous les membres invite ont repondu
+                        if(membersInvitedTab.length > 0) res.status(401).json({message: `Vous ne pouvez pas démarrer encore le secret santa, car il y a ${membersInvitedTab} qui n a/ont pas répondu encore à l invitation`});
+                        else{
+                            let tab = [];
+                            for(let i=0; i < members.length; i++){
+                                if(i+1 <members.length){
+                                    tab.push({
+                                        personneQuiOffre : members[i],
+                                        personneAQuiOffrir : members[i+1]
+                                    })
+                                }else{
+                                    tab.push({
+                                        personneQuiOffre : members[i],
+                                        personneAQuiOffrir : members[0]
+                                    })
+                                }
+                            }
+
+                            groupM.membersAssigned = tab;
+                            const groupUpdate = await Group.findByIdAndUpdate(req.group.id, groupM, {new: true});
+
+                            res.status(201).json({message: 'Chaque membre à été assigné à un autre participant'})
+                        }
+                    }
+
+                } catch (error) {
+                    res.status(500);
+                        console.log(error);
+                        res.json({ message : 'Erreur serveur'});
+                }
+            }else{
+                res.status(403).json({message: "Accès interdit: Vous n\'etes pas l\'admin"});
+            }
+        }else{
+            res.status(403).json({message: "Accès interdit: token manquant"});
+        } 
+    } catch (error) {
+        res.status(500);
+            console.log(error);
+            res.json({ message : 'Erreur serveur (group inexistant)'});
+    }
+}
+
+exports.listAllMembersWithAssignement = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        if(token != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+
+            req.group = payload;
+
+            //si l utilisateur est un admin sinon pas d acces
+            if(req.group.user_id == req.group.admin_id){
+                try {
+                    //récup la liste des membres avec leur assigniation
+                    const groupM = await Group.findOne({_id: req.group.id});
+                    membersAssignTab = groupM.membersAssigned;
+
+                    let liste = "";
+
+                    for(let i=0; i<membersAssignTab.length; i++){
+                        let couple = membersAssignTab[i];
+
+                        let user1 = await User.findOne({_id: couple.personneQuiOffre});
+                        let user2 = await User.findOne({_id: couple.personneAQuiOffrir});
+
+                        liste += `L'utilisateur ${user1.email} doit offrir au participant ${user2.email}. \n\n`
+                    }
+
+                    res.status(201).json(liste);
+
+                } catch (error) {
+                    res.status(500);
+                        console.log(error);
+                        res.json({ message : 'Erreur serveur'});
+                }
+            }else{
+                res.status(403).json({message: "Accès interdit: Vous n'êtes pas l'admin par conséquant vous n avez pas accès à la liste."});
+            }
+        }else{
+            res.status(403).json({message: "Accès interdit: token manquant"});
         } 
     } catch (error) {
         res.status(500);

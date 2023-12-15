@@ -77,7 +77,7 @@ server.get('/groups', jwtMiddleware.verifyToken, groupController.getAllUsersInGr
 /**
  * @openapi
  * /groups:
- *   post:
+ *   get:
  *     summary: list members of a group
  *     description: Endpoint to list members of a group. Only the members can see each other.
  *     tags: [Groups]
@@ -92,11 +92,29 @@ server.get('/groups', jwtMiddleware.verifyToken, groupController.getAllUsersInGr
  */
 
 
+server.post('/groups/admin/senta', jwtMiddleware.verifyToken, groupController.assignPerson);
+/**
+ * @openapi
+ * /groups/admin/senta:
+ *   post:
+ *     summary: Algorithm to randomly assign a group member to each participant
+ *     description: Endpoint to randomly assign a group member to each participant
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Group created successfully
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group created successfully and its name is ${name}' }
+ */
+
 server.delete('/groups/admin', jwtMiddleware.verifyToken, groupController.deleteGroup);
 /**
  * @openapi
  * /groups/admin:
- *   post:
+ *   delete:
  *     summary: delete a group
  *     description: Endpoint to delete a group.
  *     tags: [Groups]
@@ -142,10 +160,10 @@ server.put('/groups/admin', jwtMiddleware.verifyToken, groupController.updateNam
  */
 
 
-server.post('/groups/invitation', jwtMiddleware.verifyToken, groupController.inviteToGroup);
+server.post('/groups/admin/invitation', jwtMiddleware.verifyToken, groupController.inviteToGroup);
 /**
  * @openapi
- * /groups/invitation:
+ * /groups/admin/invitation:
  *   post:
  *     summary: Invite member to a group
  *     description: Endpoint to invite member to a group only by the admin.
@@ -230,6 +248,24 @@ server.post('/groups/invitation/refuse', jwtMiddleware.verifyToken, groupControl
  *             example: { message: 'user denied the invitation' }
  */
 
+
+server.get('/groups/admin', jwtMiddleware.verifyToken, groupController.listAllMembersWithAssignement);
+/**
+ * @openapi
+ * /groups/admin:
+ *   get:
+ *     summary: List of all user with their assigner
+ *     description: Endpoint to list of all user with their assigner.
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       201:
+ *         description: List of all user with their assigner
+ *         content:
+ *           application/json:
+ *             example: { message: 'the user {a@gmail.com} is assigned tp {a@gmail.com}' }
+ */
 
 
 }
