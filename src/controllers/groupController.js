@@ -1,5 +1,7 @@
 const User = require('../models/userModel');
 const Group = require('../models/groupModel');
+const bcrypt = require('bcrypt');
+const jwtMiddleware = require('../middlewares/jwtMiddleware');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -69,12 +71,10 @@ exports.connectToAGroup = async(req, res) =>{
                     res.status(500).json({message: "Group non trouvé"});
                     return;
                 }else{
-                    //l id, admin_id et members_id sont recup depuis la bdd
+                    //l id sont admin_id sont recup depuis la bdd
                     const groupData = {
                         id: group._id,
                         admin_id: group.admin_id,
-                        members_id: group.members_id,
-                        membresInvited: group.membresInvited,
                         user_id: req.user.id
                     }
                     
@@ -97,7 +97,6 @@ exports.connectToAGroup = async(req, res) =>{
     }
 }
 
-
 exports.getAllUsersInGroup = async(req, res) =>{
     try {
         let token = req.headers['authorization'];
@@ -114,14 +113,17 @@ exports.getAllUsersInGroup = async(req, res) =>{
 
             req.group = payload;
 
+            //récup la liste des membres du group
+            const groupM = await Group.findOne({_id: req.group.id});
+            membersTab = groupM.members_id;
+
             //si l utilisateur fais partie du group il peut acceder a la liste des members
-            const groupMembers = req.group.members_id;
-            console.log(groupMembers);
-            if(groupMembers.includes(req.group.user_id)){
+            if(membersTab.includes(req.group.user_id)){
                 try {
                     let tabMembers = [];
-                    for(let i=0; i<groupMembers.length; i++){
-                        const userMember = await User.find({_id : groupMembers[i]});
+                    for(let i=0; i<membersTab.length; i++){
+                        //pour chaque user récup son email
+                        const userMember = await User.find({_id : membersTab[i]});
                         tabMembers.push({id: userMember[i]._id, email: userMember[i].email})
                     }
                     res.status(200);
@@ -144,7 +146,6 @@ exports.getAllUsersInGroup = async(req, res) =>{
             res.json({ message : 'Erreur serveur (group inexistant)'});
     }
 }
-
 
 exports.deleteGroup = async(req, res) =>{
     try {
@@ -244,37 +245,90 @@ exports.inviteToGroup = async(req, res) =>{
 
             if(req.group.admin_id == req.group.user_id){
                 try {
+                    //récup les données du user dans la bdd
                     const userInvited = await User.findOne({email: req.body.email});
 
-                    //vérifier que l utilisateur existe bien dans la bdd
+                    //recupe les donnees du groupe ou l on veut add un user
+                    const groupM = await Group.findOne({_id: req.group.id});
+
+                    //récup la liste des membres invités a rejoindre le groupe
+                    const membersInvitedTab = groupM.membresInvited;
+
+                    //vérifier que l utilisateur existe bien dans la bdd sinon le créer
                     if(!userInvited){
-                        res.status(500).json({message: "L\'utilisateur n\'existe pas dans la base de donnée"})
+                        //générer un mot de passe
+                        let password = jwtMiddleware.genererMotDePasse();
+                        password = await bcrypt.hash(password, 10);
+
+                        //créer et ajouter le user dans la base de donnée
+                        let newUser = new User({
+                            email: req.body.email,
+                            password: password,
+                            created: false
+                        })
+
+                        let user = await newUser.save();
+
+                        //ajouter le user au membres Invités
+                        membersInvitedTab.push({
+                            email: req.body.email,
+                            id: user.id,
+                            createdAt: new Date().getTime(),
+                        })
+
+                        //update dans la bdd les membres invites de ce groupe
+                        groupM.membresInvited = membersInvitedTab;
+                        const groupUpdate = await Group.findByIdAndUpdate(req.group.id, groupM, {new: true});
+
+                        user = await User.findOne({email: req.body.email});
+
+                        //créer le token correspondant
+                        const groupData = {
+                            id: groupM._id,
+                            admin_id: groupM.admin_id,
+                            user_id: user.id
+                        }
+                        
+                        const tokenInvit = await jwt.sign(groupData, process.env.JWT_KEY, {expiresIn: '24h'});
+                        res.status(201).json({message: `${req.body.email} a été créé et invité a rejoindre ce groupe. Le token de l'invitation est ${tokenInvit}`});
                     }else{
 
                         //récup la liste des membres du group
-                        const groupMembers = req.group.members_id;
-
-                        //récup la liste des membres invités a rejoindre le groupe
-                        const membersInvited = req.group.membresInvited;
+                        const groupMembers = groupM.members_id;
 
                         //l invitation est valide pendant 24h
                         const expirationTime = 24 * 60 * 60 * 1000;
                         const currentTime = new Date().getTime();
 
                         //voir si l id du user quand veut inviter fais partis des membres deja invités
-                        const id = membersInvited.indexOf(req.group.user_id);
+                        const id = membersInvitedTab.indexOf(req.group.user_id);
 
                         //envoyer une invitation que si l utilisateurs ne fais pas partie des membres du groupes
                         //ou si une invitation na pas déja été envoye
-                        if(membersInvited == undefined || !(groupMembers.includes(req.group.user_id)) || (id == -1)){
-                            if(membersInvited == undefined) membersInvited = [];
+                        if(membersInvitedTab == undefined || !(groupMembers.includes(req.group.user_id)) || (id == -1)){
+                            if(membersInvitedTab == undefined) membersInvitedTab = [];
 
-                            membersInvited.push({
+                            membersInvitedTab.push({
                                 email: req.body.email,
+                                id: userInvited.id,
                                 createdAt: new Date().getTime(),
                             })
+    
+                            
+                            //je modifie dans la base de donnee
+                            groupM.membresInvited = membersInvitedTab;
+                            const groupUpdate = await Group.findByIdAndUpdate(req.group.id, groupM, {new: true});
 
-                            res.status(201).json({message: `${req.body.email} a été invité a rejoindre ce groupe.`});
+                            //créer le token correspondant
+                            const groupData = {
+                                id: groupM._id,
+                                admin_id: groupM.admin_id,
+                                user_id: userInvited.id
+                            }
+
+                            const tokenInvit = await jwt.sign(groupData, process.env.JWT_KEY, {expiresIn: '24h'});
+
+                            res.status(201).json({message: `${req.body.email} a été créé et invité a rejoindre ce groupe. Le token de l'invitation est ${tokenInvit}`});
                         }else{
                             //si l utilisateur fais partie des membres
                             if(groupMembers.includes(req.group.user_id)){
@@ -283,16 +337,31 @@ exports.inviteToGroup = async(req, res) =>{
                                 //si une invitation a été envoye
                                 if(id !== -1){
                                     //si l invitation na pas expire
-                                    if(currentTime - membersInvited[id].createdA < expirationTime){
+                                    if(currentTime - membersInvitedTab[id].createdA < expirationTime){
                                         res.status(500).json({message: "L\'utilisateur a déja été invité."})
                                     }else{
                                         // si l invit a été envoye mais elle a expiré on renvoie
-                                        membersInvited.push({
+                                        membersInvitedTab.push({
                                             email: req.body.email,
+                                            id: userInvited.id,
                                             createdAt: new Date().getTime(),
                                         })
+                
+                                        
+                                        //je modifie dans la base de donnee
+                                        groupM.membresInvited = membersInvitedTab;
+                                        const groupUpdate = await Group.findByIdAndUpdate(req.group.id, groupM, {new: true});
 
-                                        res.status(201).json({message: `${req.body.email} a été invité a rejoindre ce groupe.`});
+                                        //créer le token correspondant
+                                        const groupData = {
+                                            id: groupM._id,
+                                            admin_id: groupM.admin_id,
+                                            user_id: userInvited.id
+                                        }
+                                    
+                                        const tokenInvit = await jwt.sign(groupData, process.env.JWT_KEY, {expiresIn: '24h'});
+
+                                        res.status(201).json({message: `${req.body.email} a été créé et invité a rejoindre ce groupe. Le token de l'invitation est ${tokenInvit}`});
                                     }
                                 }
                             }
@@ -313,5 +382,152 @@ exports.inviteToGroup = async(req, res) =>{
     } catch (error) {
         console.log(error);
         res.status(500).json({message: 'Une erreur s\'est produite lors du traitement'});
+    }
+}
+
+exports.acceptInvitation = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        let tokenInvit = req.body.authorizationInvit;
+        
+        if(token != undefined && tokenInvit != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+            req.user = payload;
+
+            const payloadInvit = await new Promise((resolve, reject) =>{
+                jwt.verify(tokenInvit, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+            req.group = payloadInvit;
+            //vérifier que le user qui est connecte est le user invite
+            if(req.user.id == req.group.user_id){
+                //recupe la liste des membres invités
+                let groupM = await Group.findOne({_id: req.group.id});
+                let membersInvitedTab = groupM.membresInvited;
+                
+                //vérifier que le user na pas déja accepter l invit
+                let indexUser = -1;
+                
+                for(let i=0; i<membersInvitedTab.length; i++){
+                    if(membersInvitedTab[i].id == req.user.id) indexUser = i;
+                    
+                }
+
+                //si le user ne fais pas parti des membres invites donc il a deja accepter l invit
+                if(indexUser === -1){
+                    res.status(401).json({message: "Vous avez déja accepter l'invitation"})
+                }else{
+                    let membersTab = groupM.members_id;
+                    membersTab.push(req.user.id);
+
+                    //supprime de le user des membres qui ont été invite
+                    for(let i=0; i<membersInvitedTab.length; i++){
+                        if(membersInvitedTab[i].id == req.user.id) membersInvitedTab.splice(i, 1);
+                    }
+
+                    groupM.members_id = membersTab;
+                    groupM.membersTab = membersInvitedTab;
+                    
+                    const groupUpdate = await Group.findByIdAndUpdate(req.group.id, groupM, {new: true});
+                    res.status(201).json({message: 'Vous venez de rejoindre le groupe '})
+                }
+            }else{
+                res.status(401).json({message: 'Vous n avez pas été invité à joindre ce groupe '})
+            }
+
+        }else{
+            if(token == undefined ) res.status(403).json({message: "Accès interdit: token de login maquant"});
+            else res.status(403).json({message: "Accès interdit: token de l invitation manquant ou expiré"});
+        } 
+    } catch (error) {
+        res.status(500);
+            console.log(error);
+            res.json({ message : 'Erreur serveur (group inexistant)'});
+    }
+}
+
+
+
+exports.refuseInvitation = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        let tokenInvit = req.body.authorizationInvit;
+        
+        if(token != undefined && tokenInvit != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+            req.user = payload;
+
+            const payloadInvit = await new Promise((resolve, reject) =>{
+                jwt.verify(tokenInvit, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+            req.group = payloadInvit;
+
+
+            //vérifier que le user qui est connecte est le user invite
+            if(req.user.id == req.group.user_id){
+
+                //recupe la liste des membres invités
+                let groupM = await Group.findOne({_id: req.group.id});
+                let membersInvitedTab = groupM.membresInvited;
+                
+                let indexUser = -1;
+                for(let i=0; i<membersInvitedTab.length; i++){
+                    if(membersInvitedTab[i].id == req.user.id) indexUser = i;
+                    
+                }
+
+                //si le user ne fais pas parti des membres invites donc il a deja accepter l invit
+                if(indexUser === -1){
+                    res.status(401).json({message: "Vous avez déja répondu à l'invitation"})
+                }else{
+                    //supprime de le user des membres qui ont été invite
+                    for(let i=0; i<membersInvitedTab.length; i++){
+                        if(membersInvitedTab[i].id == req.user.id) membersInvitedTab.splice(i, 1);
+                    }
+
+                    groupM.membersTab = membersInvitedTab;
+                    
+                    const groupUpdate = await Group.findByIdAndUpdate(req.group.id, groupM, {new: true});
+                    res.status(201).json({message: 'Vous venez refusé de rejoindre le groupe '})
+                }
+            }else{
+                res.status(401).json({message: 'Vous n avez pas été invité à joindre ce groupe '})
+            }
+
+        }else{
+            if(token == undefined ) res.status(403).json({message: "Accès interdit: token de login maquant"});
+            else res.status(403).json({message: "Accès interdit: token de l invitation manquant ou expiré"});
+        } 
+    } catch (error) {
+        res.status(500);
+            console.log(error);
+            res.json({ message : 'Erreur serveur (group inexistant)'});
     }
 }

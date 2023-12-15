@@ -115,11 +115,11 @@ server.delete('/groups/admin', jwtMiddleware.verifyToken, groupController.delete
 server.put('/groups/admin', jwtMiddleware.verifyToken, groupController.updateNameGroup);
 /**
  * @openapi
- * /users:
+ * /groups/admin:
  *   put:
  *     summary: Modify groupe name
  *     description: Endpoint to modify group name only by the admin of the group.
- *     tags: [Users]
+ *     tags: [Groups]
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -142,14 +142,14 @@ server.put('/groups/admin', jwtMiddleware.verifyToken, groupController.updateNam
  */
 
 
-server.post('/groups/admin', jwtMiddleware.verifyToken, groupController.inviteToGroup);
+server.post('/groups/invitation', jwtMiddleware.verifyToken, groupController.inviteToGroup);
 /**
  * @openapi
- * /users:
+ * /groups/invitation:
  *   post:
  *     summary: Invite member to a group
  *     description: Endpoint to invite member to a group only by the admin.
- *     tags: [Users]
+ *     tags: [Groups]
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -170,4 +170,69 @@ server.post('/groups/admin', jwtMiddleware.verifyToken, groupController.inviteTo
  *           application/json:
  *             example: { message: 'User invited, the email of the user is given' }
  */
+
+
+server.post('/groups/invitation/accept', jwtMiddleware.verifyToken, groupController.acceptInvitation);
+/**
+ * @openapi
+ * /groups/invitation/accept:
+ *   post:
+ *     summary: Accept an invitation to join a group
+ *     description: Endpoint to Accept an invitation to join a group.
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               authorizationInvit:
+ *                 type: string
+ *             required:
+ *               - authorizationInvit
+ *     responses:
+ *       201:
+ *         description: User accept the invitation to join the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'User joined the group' }
+ */
+
+server.post('/groups/invitation/refuse', jwtMiddleware.verifyToken, groupController.refuseInvitation);
+/**
+ * @openapi
+ * /groups/invitation/refuse:
+ *   post:
+ *     summary: Deny an invitation to join a group
+ *     description: Endpoint to deny an invitation to join a group.
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               authorizationInvit:
+ *                 type: string
+ *             required:
+ *               - authorizationInvit
+ *     responses:
+ *       201:
+ *         description: User denied the invitation to join the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'user denied the invitation' }
+ */
+
+
+
 }
+
+
+
