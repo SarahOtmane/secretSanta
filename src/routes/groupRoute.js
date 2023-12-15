@@ -138,8 +138,36 @@ server.put('/groups/admin', jwtMiddleware.verifyToken, groupController.updateNam
  *         description: Group name modified successfully
  *         content:
  *           application/json:
- *             example: { message: 'Group name modified successfully, the new name is givent' }
+ *             example: { message: 'Group name modified successfully, the new name is given' }
  */
 
 
+server.post('/groups/admin', jwtMiddleware.verifyToken, groupController.inviteToGroup);
+/**
+ * @openapi
+ * /users:
+ *   post:
+ *     summary: Invite member to a group
+ *     description: Endpoint to invite member to a group only by the admin.
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *             required:
+ *               - email
+ *     responses:
+ *       201:
+ *         description: User invited
+ *         content:
+ *           application/json:
+ *             example: { message: 'User invited, the email of the user is given' }
+ */
 }

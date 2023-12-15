@@ -24,7 +24,8 @@ exports.createAGroup = async(req, res) =>{
                 let newGroup = await new Group({
                     name: req.body.name,
                     admin_id: req.user.id,
-                    members_id: [req.user.id]
+                    members_id: [req.user.id],
+                    membresInvited: [],
                 });
 
                 let group = await newGroup.save();
@@ -73,6 +74,7 @@ exports.connectToAGroup = async(req, res) =>{
                         id: group._id,
                         admin_id: group.admin_id,
                         members_id: group.members_id,
+                        membresInvited: group.membresInvited,
                         user_id: req.user.id
                     }
                     
@@ -113,7 +115,8 @@ exports.getAllUsersInGroup = async(req, res) =>{
             req.group = payload;
 
             //si l utilisateur fais partie du group il peut acceder a la liste des members
-            const groupMembers = req.group.members_id[0];
+            const groupMembers = req.group.members_id;
+            console.log(groupMembers);
             if(groupMembers.includes(req.group.user_id)){
                 try {
                     let tabMembers = [];
@@ -219,5 +222,96 @@ exports.updateNameGroup = async(req, res) =>{
         res.status(500);
             console.log(error);
             res.json({ message : 'Erreur serveur'});
+    }
+}
+
+
+exports.inviteToGroup = async(req, res) =>{
+    try {
+        let token = req.headers['authorization'];
+        if(token != undefined){
+            const payload = await new Promise((resolve, reject) =>{
+                jwt.verify(token, process.env.JWT_KEY, (error, decoded) =>{
+                    if(error){
+                        reject(error);
+                    }else{
+                        resolve(decoded);
+                    }
+                })
+            })
+
+            req.group = payload;
+
+            if(req.group.admin_id == req.group.user_id){
+                try {
+                    const userInvited = await User.findOne({email: req.body.email});
+
+                    //vérifier que l utilisateur existe bien dans la bdd
+                    if(!userInvited){
+                        res.status(500).json({message: "L\'utilisateur n\'existe pas dans la base de donnée"})
+                    }else{
+
+                        //récup la liste des membres du group
+                        const groupMembers = req.group.members_id;
+
+                        //récup la liste des membres invités a rejoindre le groupe
+                        const membersInvited = req.group.membresInvited;
+
+                        //l invitation est valide pendant 24h
+                        const expirationTime = 24 * 60 * 60 * 1000;
+                        const currentTime = new Date().getTime();
+
+                        //voir si l id du user quand veut inviter fais partis des membres deja invités
+                        const id = membersInvited.indexOf(req.group.user_id);
+
+                        //envoyer une invitation que si l utilisateurs ne fais pas partie des membres du groupes
+                        //ou si une invitation na pas déja été envoye
+                        if(membersInvited == undefined || !(groupMembers.includes(req.group.user_id)) || (id == -1)){
+                            if(membersInvited == undefined) membersInvited = [];
+
+                            membersInvited.push({
+                                email: req.body.email,
+                                createdAt: new Date().getTime(),
+                            })
+
+                            res.status(201).json({message: `${req.body.email} a été invité a rejoindre ce groupe.`});
+                        }else{
+                            //si l utilisateur fais partie des membres
+                            if(groupMembers.includes(req.group.user_id)){
+                                res.status(500).json({message: "L\'utilisateur est déja membre du groupe"})
+                            }else{
+                                //si une invitation a été envoye
+                                if(id !== -1){
+                                    //si l invitation na pas expire
+                                    if(currentTime - membersInvited[id].createdA < expirationTime){
+                                        res.status(500).json({message: "L\'utilisateur a déja été invité."})
+                                    }else{
+                                        // si l invit a été envoye mais elle a expiré on renvoie
+                                        membersInvited.push({
+                                            email: req.body.email,
+                                            createdAt: new Date().getTime(),
+                                        })
+
+                                        res.status(201).json({message: `${req.body.email} a été invité a rejoindre ce groupe.`});
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                } catch (error) {
+                    res.status(500);
+                        console.log(error);
+                        res.json({ message : 'Erreur serveur'});
+                }
+            }else{
+                res.status(403).json({message: "Accès interdit: Vous n\'etes pas l\'admin"});
+            }
+        }else{
+            res.status(403).json({message: "Accès interdit: token manquant"});
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: 'Une erreur s\'est produite lors du traitement'});
     }
 }
