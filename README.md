@@ -46,7 +46,9 @@ Créer une API robuste permettant aux utilisateurs de s'inscrire, de créer des 
  - dotenv : Charger des variables d'environnement à partir d'un fichier .env
  - swagger-jsdoc: Configuration Swagger pour la documentation API.
  - swagger-ui-express: Intégration Swagger UI pour la visualisation de la documentation.
+  ## Dépendances dev :
  - nodemon: Permet de démarrer le serveur
+ - jest : framework de testing de code
 
 
 # Utilisation
