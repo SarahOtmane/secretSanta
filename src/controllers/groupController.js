@@ -18,13 +18,13 @@ const jwtMiddleware = require('../middlewares/jwtMiddleware');
     Elle prend en entrée : le nom du groupe ${name}
 
     Les vérifications : 
-        - Existence du token de connection à un compte user
+        - Existence du token de connexion à un compte user
 
 
     Reponses: 
         201 : création du groupe. 
             la fonction retourne le nom du groupe ainsi que son id : ${name} , ${id}
-        403 : Accès interdit : Token de connection au compte user manquant ou expiré
+        403 : Accès interdit : Token de connexion au compte user manquant ou expiré
         500 : Erreur lors du traitement de donnée
 */
 exports.createAGroup = async(req, res) =>{
@@ -90,13 +90,13 @@ exports.createAGroup = async(req, res) =>{
     Elle prend en entrée : le nom et l'id du groupe ${name} , ${id}
 
     Les vérifications : 
-        - Existence du token de connection à un compte user
+        - Existence du token de connexion à un compte user
         - Vérifier que le groupe existe bien dans la bdd
 
     Reponses: 
-        201 : Connection au groupe (générer un token de groupe avec l id du groupe, admin_id, id du user qui vient de se connecte). 
-            la fonction retourne le token de connection : ${token}
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré
+        201 : connexion au groupe (générer un token de groupe avec l id du groupe, admin_id, id du user qui vient de se connecte). 
+            la fonction retourne le token de connexion : ${token}
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré
         404 : Le groupe recherché n'existe pas dans la base de donnée
         500 : Erreur lors du traitement de donnée
 */
@@ -124,7 +124,7 @@ exports.connectToAGroup = async(req, res) =>{
                     res.status(404).json({message: "Groupe non trouvé"});
                     return;
                 }else{
-                    //si le groupe existe créer le token de connection au groupe
+                    //si le groupe existe créer le token de connexion au groupe
                     const groupData = {
                         id: group._id,
                         admin_id: group.admin_id,
@@ -161,13 +161,13 @@ exports.connectToAGroup = async(req, res) =>{
     Elle ne prend rien en entrée
 
     Les vérifications : 
-        - Existence du token de connection au groupe
+        - Existence du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user fais partie du groupe sinon il n'a pas accès à la liste
     
     Reponses: 
         201 : Affichage de la liste des membres
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / Utilisateur ne fait pas partie du groupe
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / Utilisateur ne fait pas partie du groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
 */
@@ -238,13 +238,13 @@ exports.getAllUsersInGroup = async(req, res) =>{
     Elle ne prend rien en entrée
 
     Les vérifications :
-        - Existence du token de connection au groupe
+        - Existence du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user qui essaye de delete est l admin du groupe 
 
     Reponses: 
         201 : Groupe supprimé
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / l'utilisateur n'est pas l'admin du groupe
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / l'utilisateur n'est pas l'admin du groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
 */
@@ -306,13 +306,13 @@ exports.deleteGroup = async(req, res) =>{
     Elle prend en entrée : le nouveau nom du groupe ${name}
 
     Les vérifications :
-        - Existence du token de connection au groupe
+        - Existence du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user qui essaye d'update est l admin du groupe 
 
     Reponses: 
         201 : Groupe modifié : retourner le nouveau name ${name}
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / l'utilisateur n'est pas l'admin du groupe
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / l'utilisateur n'est pas l'admin du groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
 */
@@ -373,7 +373,7 @@ exports.updateNameGroup = async(req, res) =>{
     Elle prend en entrée : l'email de l'utilisateur à inviter ${email}
 
     Les vérifications :
-        - Existence du token de connection au groupe
+        - Existence du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user qui essaye d'update est l admin du groupe
         - Vérifier l'existance du user à inviter dans la base de donnée 
@@ -393,7 +393,7 @@ exports.updateNameGroup = async(req, res) =>{
     Reponses: 
         201 : User invité : retourner l'email du user ${email}
         400 : User déja membre / User à déja reçu une invit qui n'a pas expiré
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / l'utilisateur n'est pas l'admin du groupe
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / l'utilisateur n'est pas l'admin du groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
 */
@@ -573,8 +573,8 @@ exports.inviteToGroup = async(req, res) =>{
     Elle prend en entrée : le token de l'invitation
 
     Les vérifications :
-        - Existence du token de connection au compte user
-        - Existance du token de connection au groupe
+        - Existence du token de connexion au compte user
+        - Existance du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user qui veut joindre le groupe est celui qui a été invité
         - Vérifier que le user n'a pas déja accepter l'invit
@@ -584,7 +584,7 @@ exports.inviteToGroup = async(req, res) =>{
     Reponses: 
         201 : User ajouté au groupe
         401 : Accès refusé : Le user a déja répondu à l'invitation
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / Token invitation manquant ou expiré /
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / Token invitation manquant ou expiré /
                 Le user n'a pas été invité à joindre le groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
@@ -682,8 +682,8 @@ exports.acceptInvitation = async(req, res) =>{
     Elle prend en entrée : le token de l'invitation
 
     Les vérifications :
-        - Existence du token de connection au compte user
-        - Existance du token de connection au groupe
+        - Existence du token de connexion au compte user
+        - Existance du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user qui veut joindre le groupe est celui qui a été invité
         - Vérifier que le user n'a pas déja refusé l'invit
@@ -694,7 +694,7 @@ exports.acceptInvitation = async(req, res) =>{
     Reponses: 
         201 : Le user à refusé de joindre le groupe
         401 : Accès refusé : Le user à déja répondu à l'invitation
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / Token invitation manquant ou expiré /
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / Token invitation manquant ou expiré /
                 Le user n'a pas été invité à joindre le groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
@@ -791,7 +791,7 @@ exports.refuseInvitation = async(req, res) =>{
     Elle prend rien en entrée
 
     Les vérifications :
-        - Existance du token de connection au groupe
+        - Existance du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user qui veut lancer le SantaSecret est l'admin du groupe
         - Vérifier qu'il y'a minimum deux membres
@@ -804,7 +804,7 @@ exports.refuseInvitation = async(req, res) =>{
     Reponses: 
         201 : Chaque memebre a été assigné à un autre
         401 : Accès refusé : moins de 2 membres / Il y'a des users qui n'ont pas encore répondu à l'invit
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / Le user n'est pas l'admin
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / Le user n'est pas l'admin
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
 */
@@ -901,13 +901,13 @@ exports.assignPerson = async(req, res) =>{
     Elle prend rien en entrée
 
     Les vérifications :
-        - Existance du token de connection au groupe
+        - Existance du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user qui veut avoir la liste est l'admin du groupe
 
     Reponses: 
         201 : La liste des users et à qui ils ont été assignés
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / Le user n'est pas l'admin
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / Le user n'est pas l'admin
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
 */
@@ -981,13 +981,13 @@ exports.listAllMembersWithAssignement = async(req, res) =>{
     Elle prend rien en entrée
 
     Les vérifications :
-        - Existance du token de connection au groupe
+        - Existance du token de connexion au groupe
         - Vérifier que le groupe existe toujours dans la bdd
         - Vérifier que le user fais partie des memebres du groupe
 
     Reponses: 
         201 : Le nom du membre qui a été assigné au user
-        403 : Accès interdit : Token de connection au groupe manquant ou expiré / Le user ne fais pas partie du groupe
+        403 : Accès interdit : Token de connexion au groupe manquant ou expiré / Le user ne fais pas partie du groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
 */

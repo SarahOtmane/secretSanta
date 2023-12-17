@@ -66,7 +66,7 @@ exports.userRegister = async(req, res) =>{
 
 
     Reponses: 
-        201 : Connection au compte user. 
+        201 : connexion au compte user. 
             la fonction retourne le token user: ${token} 
         401 : Accès refusé : Mot de passe incorrect
         404 : Utilisateur non trouvé
@@ -111,7 +111,7 @@ exports.loginRegister = async(req, res) =>{
     Elle prend en entrée : Un mot de passe ${password}
 
     Les vérifications : 
-        - Existence du token de connection à un compte user
+        - Existence du token de connexion à un compte user
         - Vérifier que l'utilisateur existe dans la base de donnée
 
 
@@ -177,7 +177,7 @@ exports.userModify = async(req, res) =>{
     Elle prend rien en entrée
 
     Les vérifications : 
-        - Existence du token de connection à un compte user
+        - Existence du token de connexion à un compte user
         - Vérifier que l'utilisateur existe dans la base de donnée
 
 
