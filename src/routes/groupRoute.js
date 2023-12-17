@@ -38,6 +38,16 @@ server.post('/groups/create', jwtMiddleware.verifyToken, groupController.createA
  *         content:
  *           application/json:
  *             example: { message: 'Group created successfully and its name is ${name}' }
+ *       403:
+ *         description: missing or expired token
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -67,10 +77,26 @@ server.post('/groups/login', jwtMiddleware.verifyToken, groupController.connectT
  *               - id
  *     responses:
  *       201:
- *         description: Group created successfully
+ *         description: Loged to the group with success and the token is given
  *         content:
  *           application/json:
- *             example: { message: 'Group created successfully and its name is ${name}' }
+ *             example: { message: 'Loged to the group with success and the token is given' }
+ *       403:
+ *         description: missing or expired token
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
+ * 
  */
 
 server.get('/groups', jwtMiddleware.verifyToken, groupController.getAllUsersInGroup);
@@ -89,6 +115,21 @@ server.get('/groups', jwtMiddleware.verifyToken, groupController.getAllUsersInGr
  *         content:
  *           application/json:
  *             example: { members of the group }
+ *       403:
+ *         description: missing or expired token / User is not a member of a group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User is not a member of a group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -104,10 +145,30 @@ server.post('/groups/admin/senta', jwtMiddleware.verifyToken, groupController.as
  *       - BearerAuth: []
  *     responses:
  *       201:
- *         description: Group created successfully
+ *         description: Each member of the group is assigned to another one
  *         content:
  *           application/json:
- *             example: { message: 'Group created successfully and its name is ${name}' }
+ *             example: { message: 'Each member of the group is assigned to another one' }
+ *       401:
+ *         description: some memebers didn't answer to the invit yet / there's less then 2 members in the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'some memebers did not answer to the invit yet / thereis less then 2 members in the group' }
+ *       403:
+ *         description: missing or expired token / User is not the admin of a group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User is not the admin of a group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -127,6 +188,21 @@ server.get('/groups/admin', jwtMiddleware.verifyToken, groupController.listAllMe
  *         content:
  *           application/json:
  *             example: { message: 'the user {a@gmail.com} is assigned tp {a@gmail.com}' }
+ *       403:
+ *         description: missing or expired token / User is not the admin of a group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User is not the admin of a group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 server.delete('/groups/admin', jwtMiddleware.verifyToken, groupController.deleteGroup);
@@ -145,6 +221,21 @@ server.delete('/groups/admin', jwtMiddleware.verifyToken, groupController.delete
  *         content:
  *           application/json:
  *             example: { message: 'Group deleted successfully' }
+ *       403:
+ *         description: missing or expired token / User is not the admin of a group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User is not the admin of a group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -176,6 +267,26 @@ server.put('/groups/admin', jwtMiddleware.verifyToken, groupController.updateNam
  *         content:
  *           application/json:
  *             example: { message: 'Group name modified successfully, the new name is given' }
+ *       400:
+ *         description: the user already accepted the invit or he didn't answer yet but the invit didn't expire
+ *         content:
+ *           application/json:
+ *             example: { message: 'the user already accepted the invit or he did not answer yet but the invit did not expire' }
+ *       403:
+ *         description: missing or expired token / User is not the admin of the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User is not the admin of the group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -206,6 +317,26 @@ server.post('/groups/admin/invitation', jwtMiddleware.verifyToken, groupControll
  *         content:
  *           application/json:
  *             example: { message: 'User invited, the email of the user is given' }
+ *       400:
+ *         description: the user already accepted the invit / user already invited and the invit didn't expire
+ *         content:
+ *           application/json:
+ *             example: { message: 'the user already accepted the invit / user already invited and the invit did not expire ' }
+ *       403:
+ *         description: missing or expired token / User is not the admin of the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User is not the admin of the group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -236,6 +367,26 @@ server.post('/groups/invitation/accept', jwtMiddleware.verifyToken, groupControl
  *         content:
  *           application/json:
  *             example: { message: 'User joined the group' }
+ *       401:
+ *         description: the user answer to the invit
+ *         content:
+ *           application/json:
+ *             example: { message: 'the user answer to the invit' }
+ *       403:
+ *         description: missing or expired token / User wasn't invited
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User wasnot invited' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 server.post('/groups/invitation/refuse', jwtMiddleware.verifyToken, groupController.refuseInvitation);
@@ -265,12 +416,73 @@ server.post('/groups/invitation/refuse', jwtMiddleware.verifyToken, groupControl
  *         content:
  *           application/json:
  *             example: { message: 'user denied the invitation' }
+ *       401:
+ *         description: the user answer to the invit
+ *         content:
+ *           application/json:
+ *             example: { message: 'the user answer to the invit' }
+ *       403:
+ *         description: missing or expired token / User wasn't invited
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User wasnot invited' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
 
 server.get('/groups/assigned', jwtMiddleware.verifyToken, groupController.getUserAssigned);
-
+/**
+ * @openapi
+ * /groups/assigned:
+ *   get:
+ *     summary: See the name og the member who's assigned to him
+ *     description: Endpoint to  See the name og the member who's assigned to him.
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               authorizationInvit:
+ *                 type: string
+ *             required:
+ *               - authorizationInvit
+ *     responses:
+ *       201:
+ *         description: User denied the invitation to join the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'user denied the invitation' }
+ *       403:
+ *         description: missing or expired token / User isn't a member of the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User isnot a member of the group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
+ */
 
 }
 
