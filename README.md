@@ -17,10 +17,11 @@ Créer une API robuste permettant aux utilisateurs de s'inscrire, de créer des 
 2. Installez les dépendances.
 ```bash
     cd secretSanta/src
-    npm install 
+    npm init
+    npm install les_dependances_qui_se_trouvent_en_bas
 ```
 
-3. Créer un fichier Créez un fichier .env à la racine du dossier src et configurez la variable d'environnement nécessaire
+3. Créer un fichier .env à la racine du dossier src et configurez la variable d'environnement nécessaire
     JWT_KEY="votre_clé_secrète_qui_est_une_chaine_de_caractère"
 
 4. Lancer MongoDb
