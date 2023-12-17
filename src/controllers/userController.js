@@ -30,7 +30,7 @@ exports.userRegister = async(req, res) =>{
         const user = await User.findOne({email: req.body.email});
 
         //vérifier que l email n existe pas
-        if(user){
+        if(!user){
             if (jwtMiddleware.verifyEmail(req.body.email)) {
                 const hashedPassword = await bcrypt.hash(req.body.password, 10);
     

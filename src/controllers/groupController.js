@@ -119,7 +119,7 @@ exports.connectToAGroup = async(req, res) =>{
 
             try{
                 //vérifier que le groupe existe dans la base de donnée
-                const group = await Group.findOne({_id:req.body.id, name: req.body.name});
+                const group = await Group.findOne({_id: req.body.id});
                 if(!group){
                     res.status(404).json({message: "Groupe non trouvé"});
                     return;
@@ -844,7 +844,7 @@ exports.assignPerson = async(req, res) =>{
                             }
     
                             //vérifier que tous les membres invite ont repondu
-                            if(membersInvitedTab.length > 0) res.status(401).json({message: `Accès refusé: Vous ne pouvez pas démarrer encore le secret santa, car il y a ${membersInvitedTab} qui n a/ont pas répondu encore à l invitation`});
+                            if(membersInvitedTab.length > 0) res.status(401).json({message: `Accès refusé: Vous ne pouvez pas démarrer encore le secret santa, car il y a ${membersInvitedTab.length} membre(s) qui n a(ont) pas répondu encore à l invitation`});
                             else{
                                 let tab = [];
                                 for(let i=0; i < members.length; i++){

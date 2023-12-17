@@ -133,44 +133,6 @@ server.get('/groups', jwtMiddleware.verifyToken, groupController.getAllUsersInGr
  */
 
 
-server.post('/groups/admin/senta', jwtMiddleware.verifyToken, groupController.assignPerson);
-/**
- * @openapi
- * /groups/admin/senta:
- *   post:
- *     summary: Algorithm to randomly assign a group member to each participant
- *     description: Endpoint to randomly assign a group member to each participant
- *     tags: [Groups]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       201:
- *         description: Each member of the group is assigned to another one
- *         content:
- *           application/json:
- *             example: { message: 'Each member of the group is assigned to another one' }
- *       401:
- *         description: some memebers didn't answer to the invit yet / there's less then 2 members in the group
- *         content:
- *           application/json:
- *             example: { message: 'some memebers did not answer to the invit yet / thereis less then 2 members in the group' }
- *       403:
- *         description: missing or expired token / User is not the admin of a group
- *         content:
- *           application/json:
- *             example: { message: 'missing or expired token / User is not the admin of a group' }
- *       404:
- *         description: Group not found
- *         content:
- *           application/json:
- *             example: { message: 'Group not found' }
- *       500:
- *         description: server error
- *         content:
- *           application/json:
- *             example: { message: 'Server error' } 
- */
-
 
 server.get('/groups/admin', jwtMiddleware.verifyToken, groupController.listAllMembersWithAssignement);
 /**
@@ -338,6 +300,46 @@ server.post('/groups/admin/invitation', jwtMiddleware.verifyToken, groupControll
  *           application/json:
  *             example: { message: 'Server error' } 
  */
+
+
+server.post('/groups/admin/senta', jwtMiddleware.verifyToken, groupController.assignPerson);
+/**
+ * @openapi
+ * /groups/admin/senta:
+ *   post:
+ *     summary: Algorithm to randomly assign a group member to each participant
+ *     description: Endpoint to randomly assign a group member to each participant
+ *     tags: [Groups]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Each member of the group is assigned to another one
+ *         content:
+ *           application/json:
+ *             example: { message: 'Each member of the group is assigned to another one' }
+ *       401:
+ *         description: some memebers didn't answer to the invit yet / there's less then 2 members in the group
+ *         content:
+ *           application/json:
+ *             example: { message: 'some memebers did not answer to the invit yet / thereis less then 2 members in the group' }
+ *       403:
+ *         description: missing or expired token / User is not the admin of a group
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token / User is not the admin of a group' }
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'Group not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
+ */
+
 
 
 server.post('/groups/invitation/accept', jwtMiddleware.verifyToken, groupController.acceptInvitation);
