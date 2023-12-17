@@ -1,0 +1,76 @@
+
+
+/* -----------  Global css -----------  */
+main input, button{
+    margin: auto;
+    font-size: 1.5rem;
+}
+
+main button{
+    width: max-content;
+    padding: 1.5rem 3rem;
+    background-color: #80F7FF;
+    font-weight: bold;
+    margin-top: 3rem;
+    color: black;
+    border: none;
+    border-radius: 2rem;
+}
+
+main input{
+    width: 73%;
+    padding: 1.3rem 0 1.3rem 2rem;
+    border-radius: .5rem;
+    margin-top: 1rem;
+    background-color: black;
+    border: 2px solid white;
+    color: white;
+}
+
+
+/* -----------  Global classes -----------  */
+.row{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+.column{
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+
+/* ----------- Login ----------- */  
+.login{
+    background-color: black;
+    color: white;
+    min-height: 100vh;
+    padding-top: 10%;
+}
+
+.login div{
+    min-width: 350px;
+    max-width: 550px;
+    margin: auto;
+    border: 2px solid #80F7FF;
+    border-radius: 2rem;
+}
+
+.login h1{
+    text-align: center;
+    margin-top: 3rem;
+    font-size: 4.5rem;
+}
+
+.login p{
+    margin: 3rem 0;
+    margin-left: 10%;
+}
+
+.login .link{
+    color:#80F7FF;
+    text-decoration: none;
+}
