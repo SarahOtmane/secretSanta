@@ -33,11 +33,27 @@ server.post('/users/register', userController.userRegister);
  *               - email
  *               - password
  *     responses:
- *       200:
+ *       201:
  *         description: User registered successfully
  *         content:
  *           application/json:
  *             example: { message: 'User registered successfully' }
+ *       400:
+ *         description: the email format is not correct
+ *         content:
+ *           application/json:
+ *             example: { message: 'Bad request: email format is not correct' }
+ *       403:
+ *         description: the email already exist 
+ *         content:
+ *           application/json:
+ *             example: { message: 'email already used for another acount' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
+ *              
  */
 
 
@@ -69,6 +85,21 @@ server.post('/users/login', userController.loginRegister);
  *         content:
  *           application/json:
  *             example: { token: 'JWT_TOKEN_HERE' }
+ *       401:
+ *         description: incorrect password 
+ *         content:
+ *           application/json:
+ *             example: { message: 'Bad request: incorrect email or password' }
+ *       404:
+ *         description: email not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'incorrect email or password' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -103,6 +134,21 @@ server.put('/users', jwtMiddleware.verifyToken, userController.userModify);
  *         content:
  *           application/json:
  *             example: { message: 'User information modified successfully' }
+ *       403:
+ *         description: missing or expired token
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token' }
+ *       404:
+ *         description: email not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'User not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 
@@ -122,6 +168,21 @@ server.delete('/users', jwtMiddleware.verifyToken, userController.deleteUser);
  *         content:
  *           application/json:
  *             example: { message: 'User account deleted successfully' }
+ *       403:
+ *         description: missing or expired token
+ *         content:
+ *           application/json:
+ *             example: { message: 'missing or expired token' }
+ *       404:
+ *         description: email not found
+ *         content:
+ *           application/json:
+ *             example: { message: 'User not found' }
+ *       500:
+ *         description: server error
+ *         content:
+ *           application/json:
+ *             example: { message: 'Server error' } 
  */
 
 }
