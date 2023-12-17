@@ -802,7 +802,7 @@ exports.refuseInvitation = async(req, res) =>{
         L'algo SantaSecret ne commence que s'il y'a au minimum 2 membres et il n'ya personne dans la liste des memebres invités
 
     Reponses: 
-        201 : Le user à refusé de joindre le groupe
+        201 : Chaque memebre a été assigné à un autre
         401 : Accès refusé : moins de 2 membres / Il y'a des users qui n'ont pas encore répondu à l'invit
         403 : Accès interdit : Token de connection au groupe manquant ou expiré / Le user n'est pas l'admin
         404 : Le groupe recherché a été supprimé de la base de donnée
@@ -986,7 +986,7 @@ exports.listAllMembersWithAssignement = async(req, res) =>{
         - Vérifier que le user fais partie des memebres du groupe
 
     Reponses: 
-        201 : La liste des users et à qui ils ont été assignés
+        201 : Le nom du membre qui a été assigné au user
         403 : Accès interdit : Token de connection au groupe manquant ou expiré / Le user ne fais pas partie du groupe
         404 : Le groupe recherché a été supprimé de la base de donnée
         500 : Erreur lors du traitement de donnée
