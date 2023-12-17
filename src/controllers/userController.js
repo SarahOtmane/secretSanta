@@ -14,6 +14,7 @@ const jwtMiddleware = require('../middlewares/jwtMiddleware');
     Elle prend en entrée : Un email et un mot de passe ${email} , ${password}
 
     Les vérifications : 
+        - Vérifier que l'email n'existe pas dans la base de donnée
         - L'email entré correspond au format d'email
 
 
@@ -21,22 +22,30 @@ const jwtMiddleware = require('../middlewares/jwtMiddleware');
         201 : création du compte user. 
             la fonction retourne l'email du user: ${email} 
         400 : Bad request : le format de l'email n'est pas respécté
+        403 : L'email existe déja dans la base de donnée
         500 : Erreur lors du traitement de donnée
 */
 exports.userRegister = async(req, res) =>{
     try {
-        if (jwtMiddleware.verifyEmail(req.body.email)) {
-            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const user = await User.findOne({email: req.body.email});
 
-            let newUser = new User({
-                email: req.body.email,
-                password: hashedPassword
-            });
-              
-            let user = await newUser.save();
-            res.status(201).json({message: `User créer: ${user.email}`});
-        } else {
-            res.status(400).json({message: 'Le format de l\'email n\'a pas été respecté'});
+        //vérifier que l email n existe pas
+        if(user){
+            if (jwtMiddleware.verifyEmail(req.body.email)) {
+                const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    
+                let newUser = new User({
+                    email: req.body.email,
+                    password: hashedPassword
+                });
+                  
+                let user = await newUser.save();
+                res.status(201).json({message: `User créer: ${user.email}`});
+            } else {
+                res.status(400).json({message: 'Le format de l\'email n\'a pas été respecté'});
+            }
+        }else{
+            res.status(403).json({message: 'Accès interdit: l\'email à déja été utilisé'})
         }
     } catch(error){
         res.status(500).json({message: 'Erreur lors du traitement des données'});
